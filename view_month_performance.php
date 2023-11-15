@@ -1,52 +1,117 @@
-<?php
-session_start();
-require_once "config.php";
-
-if (!isset($_SESSION["manager_id"])) {
-    header("Location: login.php");
-    exit;
-}
-
-$manager_id = $_SESSION["manager_id"];
-
-// Fetch the manager's name from the database
-$sql = "SELECT manager_name FROM managers WHERE manager_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $manager_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $manager_name = $row['manager_name'];
-    }
-} else {
-    $manager_name = "Unknown Manager"; // Default value in case no manager is found with the given ID
-}
-$stmt->close();
-
-error_reporting(E_ALL);
+ <!-- PHP Script Output Here -->
+ <?php
+// Include your database configuration file
+include 'config.php';
 ini_set('display_errors', 1);
-
-$client_id = $_GET['client_id'];
-
-// Fetch the client's data from the database
-$sql = "SELECT * FROM client_performance WHERE client_id = ?";
+error_reporting(E_ALL);
+// Map quarters to month_id
+$quarterToMonthIdMap = [
+    1 => 13, // Q1
+    2 => 14, // Q2
+    3 => 15, // Q3
+    4 => 16  // Q4
+];
+// Check if client_id is passed
+$client_id = isset($_GET['client_id']) ? $_GET['client_id'] : (isset($_POST['client_id']) ? $_POST['client_id'] : null);
+$selectedQuarter = isset($_GET['quarter']) ? (int)$_GET['quarter'] : 1; // Default to Q1 if not specified
+if (!$client_id) {
+    die("Client ID is required.");
+}
+// Fetch client creation date
+$sql = "SELECT client_creation_date FROM clients WHERE client_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $client_id);
 $stmt->execute();
 $result = $stmt->get_result();
-$client_data = [];
+if ($result->num_rows === 0) {
+    die("No client found with the specified ID.");
+}
+$row = $result->fetch_assoc();
+$client_creation_date = new DateTime($row['client_creation_date']);
+// Determine the year from the client creation date
+$year = (int)$client_creation_date->format('Y');
+// Calculate start and end dates of the selected quarter
+$quarterStartMonth = ($selectedQuarter - 1) * 3 + 1;
+$quarterStartDate = new DateTime("$year-$quarterStartMonth-01");
+$quarterEndDate = clone $quarterStartDate;
+$quarterEndDate->modify('+3 months -1 day');
+// Format dates for SQL query
+$quarterStart = $quarterStartDate->format('Y-m-d');
+$quarterEnd = $quarterEndDate->format('Y-m-d');
+// Fetch performance data for the selected quarter
+$sql = "SELECT 
+    SUM(calls) AS total_calls, 
+    SUM(directions) AS total_directions, 
+    SUM(fb_likes) AS total_fb_likes, 
+    SUM(fb_shares) AS total_fb_shares, 
+    SUM(fb_reach) AS total_fb_reach, 
+    SUM(search_views) AS total_search_views, 
+    SUM(google_reviews) AS total_google_reviews, 
+    AVG(average_ratings) AS avg_ratings, 
+    SUM(review_responses) AS total_review_responses, 
+    SUM(geo_grid_rankings) AS total_geo_grid_rankings, 
+    SUM(online_authority) AS total_online_authority, 
+    SUM(instagram_followers) AS total_instagram_followers, 
+    SUM(instagram_engagement) AS total_instagram_engagement, 
+    SUM(instagram_reach) AS total_instagram_reach, 
+    SUM(monthly_posts) AS total_monthly_posts, 
+    SUM(citations) AS total_citations, 
+    SUM(medical_blogs) AS total_medical_blogs, 
+    SUM(animation_videos) AS total_animation_videos, 
+    SUM(testimonial_videos) AS total_testimonial_videos, 
+    SUM(educational_videos) AS total_educational_videos, 
+    SUM(case_studies) AS total_case_studies, 
+    SUM(website_performance) AS total_website_performance, 
+    SUM(website_accessibility) AS total_website_accessibility, 
+    SUM(website_best_practices) AS total_website_best_practices, 
+    SUM(website_seo) AS total_website_seo, 
+    SUM(keyword_rankings) AS total_keyword_rankings 
+    FROM client_performance 
+    WHERE client_id = ? AND report_creation_date BETWEEN ? AND ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("iss", $client_id, $quarterStart, $quarterEnd);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-    $client_data = $result->fetch_assoc();
+if ($result->num_rows === 0) {
+    echo "No performance data found for the specified client and date range.";
+} else {
+    $data = $result->fetch_assoc();
+    // Display the data
+     
+     
 }
 
-$stmt->close();
-// $conn->close();
+$quarterData = [];
+
+// Get the month_id based on the selected quarter
+$monthId = $quarterToMonthIdMap[$selectedQuarter];
+
+$sql = "SELECT 
+    calls, directions, fb_likes, fb_shares, fb_reach, search_views, 
+    google_reviews, average_ratings, review_responses, geo_grid_rankings, 
+    online_authority, instagram_followers, instagram_engagement, instagram_reach, 
+    monthly_posts, citations, medical_blogs, animation_videos, 
+    testimonial_videos, educational_videos, case_studies, 
+    website_performance, website_accessibility, website_best_practices, 
+    website_seo, keyword_rankings 
+    FROM client_performance 
+    WHERE client_id = ? AND month_id = ?";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $client_id, $monthId);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $quarterData = $result->fetch_assoc();
+}
+
+ 
+
+$conn->close();
+
 ?>
-
-
  
 
 <!DOCTYPE html>
@@ -275,7 +340,11 @@ $stmt->close();
 
                       
                     </div>
- 
+
+                    <button class="btn btn-primary quarter-button" data-id="13">Quarter 1</button>
+<button class="btn btn-primary quarter-button" data-id="14">Quarter 2</button>
+<button class="btn btn-primary quarter-button" data-id="15">Quarter 3</button>
+<button class="btn btn-primary quarter-button" data-id="16">Quarter 4</button>
 
                 </div>
 
@@ -293,6 +362,11 @@ $stmt->close();
                                         <div class="col">
                                             <h6 class="text-uppercase font-size-12 text-muted mb-3"> Search Views</h6>
                                             <span class="h3 mb-0"> <span id="search_views"></span> <br>
+                                            <?php 
+                        
+                        echo isset($quarterData['search_views']) ? $quarterData['search_views'] : '0';
+                        echo " (Q$selectedQuarter)"; // Displaying the quarter value
+                        ?>
                                            </span>
                                         </div>
 
@@ -897,145 +971,7 @@ $stmt->close();
     <!-- Google chart custom js-->
     <script src="assets/pages/google-chart-demo.js"></script>
 
-    <script>
-      
-
-            function fetchClientPerformanceByMonth() {
-                const month = $("#month").val();
-                const clientId = $("#client_id").val();
-                //const quarterId = $("#quarterId").val();
-          
-                $.ajax({
-                    type: "POST",
-                    url: "fetch_client_performance_by_month.php",
-                    data: {
-                        month: month,
-                         
-                        client_id: clientId,
-                        quarterId: quarterId
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        console.log(data);
-                        if (data.error == 'No data available for the logged-in client.') {
-                             
-                            $("#report-creation-date").text(0);
-                            $("#search_views").text(0);     
-                            $("#search_views2").text(0);                        
-                            $("#calls").text(0);
-                            $("#directions").text(0);
-                            $("#google-reviews").text(0);
-                            $("#average_ratings").text(0);
-                            $("#review_responses").text(0);
-                            $("#geo_grid_rankings").text(0);
-                            $("#online_authority").text(0);
-                            $("#fb_likes").text(0);
-                            $("#fb_shares").text(0);
-                            $("#fb_reach").text(0);
-                            $("#instagram_followers").text(0);
-                            $("#instagram_engagement").text(0);
-                            $("#instagram_reach").text(0);
-                            $("#monthly_posts").text(0);
-                            $("#citations").text(0);
-                            $("#medical_blogs").text(0);
-                            $("#animation_videos").text(0);
-                            $("#testimonial_videos").text(0);
-                            $("#educational_videos").text(0);
-                            $("#case_studies").text(0);
-                            $("#website_performance").text(0);
-                            $("#website_accessibility").text(0);
-                            $("#website_best_practices").text(0);
-                            $("#website_seo").text(0);
-                            $("#keyword_rankings").text(0);
-                        } else {
-                            $var1='';
-                            data.forEach(function(row) {
-                            // if (row.month_id === '2') 
-                                 {
-                                        $var1=$var1+row.search_views;
-                                        $var1=$var1+"/";
-                            
-                                }
-                            });
-
-                            $("#search_views").text($var1);
-                            $("#report-creation-date").text(data.reportCreationDate);
-                           $("#search_views").text(data.search_views);
-                            
-               
-                            $("#calls").text(data.calls);
-                            $("#directions").text(data.directions);
-                            $("#google-reviews").text(data.google_reviews);
-                            $("#average_ratings").text(data.average_ratings);
-                            $("#review_responses").text(data.review_responses);
-                            $("#geo_grid_rankings").text(data.geo_grid_rankings);
-                            $("#online_authority").text(data.online_authority);
-                            $("#fb_likes").text(data.fb_likes);
-                            $("#fb_shares").text(data.fb_shares);
-                            $("#fb_reach").text(data.fb_reach);
-                            $("#instagram_followers").text(data.instagram_followers);
-                            $("#instagram_engagement").text(data.instagram_engagement);
-                            $("#instagram_reach").text(data.instagram_reach);
-                            $("#monthly_posts").text(data.monthly_posts);
-                            $("#citations").text(data.citations);
-                            $("#medical_blogs").text(data.medical_blogs);
-                            $("#animation_videos").text(data.animation_videos);
-                            $("#testimonial_videos").text(data.testimonial_videos);
-                            $("#educational_videos").text(data.educational_videos);
-                            $("#case_studies").text(data.case_studies);
-                            $("#website_performance").text(data.website_performance);
-                            $("#website_accessibility").text(data.website_accessibility);
-                            $("#website_best_practices").text(data.website_best_practices);
-                            $("#website_seo").text(data.website_seo);
-                            $("#keyword_rankings").text(data.keyword_rankings);
-
-                            // Create a pie chart
-                            var ctx = document.getElementById("fb-chart")
-                                .getContext("2d");
-                            var fbChart = new Chart(ctx, {
-                                type: "pie",
-                                data: {
-                                    labels: ["FB Likes", "FB Shares",
-                                        "FB Reach"
-                                    ],
-                                    datasets: [{
-                                        data: [data.fb_likes,
-                                            data.fb_shares,
-                                            data
-                                            .fb_reach
-                                        ],
-                                        backgroundColor: [
-                                            "#36A2EB",
-                                            "#FF6384",
-                                            "#FFCE56"
-                                        ],
-                                        hoverBackgroundColor: [
-                                            "#36A2EB",
-                                            "#FF6384",
-                                            "#FFCE56"
-                                        ],
-                                    }],
-                                },
-                                options: {
-                                    responsive: true,
-                                    legend: {
-                                        position: "bottom",
-                                    },
-                                },
-                            });
-                        }
-
-                    },
-                    error: function(jqXHR, valStatus, errorThrown) {
-                        console.log("test");
-                        console.log(valStatus, errorThrown);
-                    }
-                });
-            }
-
-            fetchClientPerformanceByMonth();
-        });
-    </script>
+  
 
 
 </body>

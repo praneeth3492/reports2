@@ -268,14 +268,7 @@ $stmt->close();
              </select>
             
         </div>
-  </div>
-
-                <div class="col-md-4">
-                <div class="form-group">
-                        <label for="report_creation_date">Report Creation Date:</label>
-                        <input type="date" class="form-control" id="report_creation_date" name="report_creation_date" value="<?php echo isset($client_data['report_creation_date']) ? $client_data['report_creation_date'] : ''; ?>">
-                    </div>
-                </div>
+  </div>           
 
                 
 

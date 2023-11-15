@@ -195,7 +195,7 @@ if ($result === false) {
     echo "Error: " . $stmt->error;
 } else {
     if ($stmt->affected_rows > 0) {
-        header("Location: manager_dashboard.php");
+        header("Location: add_fields2.php?client_id=" . $client_id);
     } else {
         echo "No rows were updated. Check if the submitted data is different from the existing data.";
     }

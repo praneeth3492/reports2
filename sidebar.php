@@ -10,6 +10,10 @@
         <li>
             <a href="manager_dashboard2.php"><i class="feather-home"></i><span class="badge badge-pill badge-success float-right">1</span><span>Client List</span></a>
         </li>
+
+        <li>
+            <a href="q3.php?quarter=1&client_id=<?php echo $client_id; ?>"><i class="feather-home"></i><span class="badge badge-pill badge-success float-right">1</span><span>Quarter Report</span></a>
+        </li>
+
     </ul>
 </div>
-<!-- Sidebar -->

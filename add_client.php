@@ -5,26 +5,20 @@ if (!isset($_SESSION['manager_id']) || !isset($_SESSION['manager_name'])) {
     exit;
 }
 require_once "config.php";
-
 $sql = "SELECT * FROM months";
 $result = $conn->query($sql);
-
 if (!$result) {
     die("Error fetching months: " . $conn->error);
 }
-
 $months = [];
 while ($row = $result->fetch_assoc()) {
-    $months[] = $row;
+        $months[] = $row;
 }
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <title>DrSmart - Admin & Dashboard Template</title>
@@ -32,27 +26,19 @@ $conn->close();
     <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
     <meta content="MyraStudio" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
     <!-- App favicon -->
     <link rel="shortcut icon" href="assets/images/favicon.ico">
-
     <!-- App css -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
     <link href="assets/css/theme.min.css" rel="stylesheet" type="text/css" />
-
 </head>
-
 <body>
-
     <!-- Begin page -->
     <div id="layout-wrapper">
-
         <!-- ========== Left Sidebar Start ========== -->
         <div class="vertical-menu">
-
             <div data-simplebar class="h-100">
-
                 <!-- LOGO -->
                 <div class="navbar-brand-box">
                     <a href="index.html" class="logo">
@@ -74,35 +60,23 @@ $conn->close();
             </div>
         </div>
         <!-- Left Sidebar End -->
-
-        <!-- ============================================================== -->
-        <!-- Start right Content here -->
-        <!-- ============================================================== -->
         <div class="main-content">
-
             <header id="page-topbar">
                 <div class="navbar-header">
                     <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-sm mr-2 d-lg-none header-item" id="vertical-menu-btn">
                             <i class="fa fa-fw fa-bars"></i>
                         </button>
-
                         <div class="header-breadcumb">
-
                             <h2 class="header-title">Overview</h2>
                         </div>
                     </div>
                     <div class="d-flex align-items-center">
-
                         <button type="button" class="btn btn-primary d-none d-lg-block ml-2">
                             <i class="mdi mdi-pencil-outline mr-1"></i> Create Reports
                         </button>
-
-                        <div class="dropdown d-inline-block ml-2">                           
-                                 
-                            </div>
+                        <div class="dropdown d-inline-block ml-2"></div>
                         </div>
-
                         <div class="dropdown d-inline-block ml-2">
                             <button type="button" class="btn header-item" id="page-header-user-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <img class="rounded-circle header-profile-user" src="assets/images/users/avatar-1.jpg" alt="Header Avatar">
@@ -152,24 +126,14 @@ $conn->close();
                                 <input type="text" class="form-control" id="clientName" name="clientName" required>
                             </div>
                             <button type="submit" class="btn btn-primary">Add Client</button>
-
-                            <label for="month">Select Month</label>
-<select name="month" id="month" class="form-control">
-    <option value="">Select Month</option>
-    <?php
-    foreach ($months as $month) {
-        echo "<option value='" . $month['id'] . "'>" . $month['name'] . "</option>";
-    }
-    ?>
-</select>
+                         
+ 
                         </form>
                         <div id="message" class="mt-3"></div>
                     </div>
+                </div>                    
                 </div>
-                    
-                </div>
-            </div>
-
+                        </div>
             <div class="container-fluid">
                 <!-- /# row -->
                 <div id="main-content">
@@ -189,18 +153,14 @@ $conn->close();
                         </table>
                     </div>
                     </div>
-                </div>
-                    
+                </div>                    
                 </div>
             </div>
             </div>
             <!-- end row-->
-
         </div> <!-- container-fluid -->
-
     </div>
     <!-- End Page-content -->
-
     <footer class="footer">
         <div class="container-fluid">
             <div class="row">
@@ -215,47 +175,34 @@ $conn->close();
             </div>
         </div>
     </footer>
-
     </div>
     <!-- end main content-->
-
     </div>
     <!-- END layout-wrapper -->
-
     <!-- Overlay-->
     <div class="menu-overlay"></div>
-
-
     <!-- jQuery  -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/metismenu.min.js"></script>
     <script src="assets/js/waves.js"></script>
     <script src="assets/js/simplebar.min.js"></script>
-
     <!-- Sparkline Js-->
     <script src="../plugins/jquery-sparkline/jquery.sparkline.min.js"></script>
-
     <!-- Morris Js-->
     <script src="../plugins/morris-js/morris.min.js"></script>
     <!-- Raphael Js-->
     <script src="../plugins/raphael/raphael.min.js"></script>
-
     <!-- Custom Js -->
     <script src="assets/pages/dashboard-demo.js"></script>
-
     <!-- App js -->
     <script src="assets/js/theme.js"></script>
-
 </body>
-
 <script>
     $("#add-client-form").submit(function(event) {
         event.preventDefault();
-
         const clientName = $("#clientName").val();
         const monthId = $("#month").val();
-
         $.ajax({
             type: "POST",
             url: "add_client_action.php",
@@ -269,8 +216,6 @@ $conn->close();
         });
     });
 </script>
-
-
 <script>
         function fetchclients() {
             $.ajax({
@@ -284,11 +229,8 @@ $conn->close();
                 }
             });
         }
-
         $(document).ready(function() {
             fetchclients();
         });
     </script>
-
-
 </html>
